@@ -2,40 +2,45 @@ import requests
 from bs4 import BeautifulSoup
 
 
-class FirstArticle:
+class ArticlesData:
     def __init__(self):
         response = requests.get("https://news.ycombinator.com/news")
 
         yc_webpage = response.text
 
         self.soup = BeautifulSoup(yc_webpage, "html.parser")
+        self.a_tags = []
+        articles = self.soup.find_all(class_="titleline")
+        for article in articles:
+            self.a_tags.append(article.find(name="a"))
 
-        article_one = self.soup.find(class_="titleline")
-        self.title_and_link = article_one.find(name="a")
-
-
-    def first_title(self):
-        """get first article's title"""
-        article_title = self.title_and_link.get_text()
-        return article_title
-
-
-    def first_link(self):
-        """find article link"""
-        article_link = self.title_and_link.get("href")
-        return article_link
+    def titles(self):
+        """get article titles"""
+        article_titles = []
+        for a_tag in self.a_tags:
+            article_title = a_tag.get_text()
+            article_titles.append(article_title)
+        return article_titles
 
 
-    def first_upvotes(self):
-        """find article upvotes"""
-        article_score = self.soup.find(class_="score")
-        article_score = article_score.get_text()
-        return article_score
+    def links(self):
+        """get article links"""
+        article_links = []
+        for a_tag in self.a_tags:
+            article_link = a_tag.get("href")
+            article_links.append(article_link)
+        return article_links
+
+
+    def upvotes(self):
+        """get article upvotes"""
+        article_scores = [score.get_text() for score in self.soup.find_all(class_="score")]
+        return article_scores
 
 
 if __name__ == "__main__":
-    first_article = FirstArticle()
+    data = ArticlesData()
 
-    print(first_article.first_title())
-    print(first_article.first_link())
-    print(first_article.first_upvotes())
+    print(data.titles())
+    print(data.links())
+    print(data.upvotes())
